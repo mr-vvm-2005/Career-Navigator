@@ -6,15 +6,11 @@ import {
     UserCircleIcon
 } from '@heroicons/react/24/outline';
 import { useApp } from '../../context/AppContext';
-import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
-import { LogOut, User as UserIcon, Settings, Bell } from 'lucide-react';
+import { User as UserIcon, Settings, Bell } from 'lucide-react';
 
 const Navbar = ({ onOpenProfile }) => {
     const { user, userStats } = useApp();
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-    const navigate = useNavigate();
-
 
     return (
         <header className="fixed top-0 right-0 left-0 lg:left-64 h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 z-40 flex items-center justify-between px-4 sm:px-8">
