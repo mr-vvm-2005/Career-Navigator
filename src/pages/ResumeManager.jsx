@@ -26,7 +26,10 @@ const ResumeManager = () => {
 
     useEffect(() => {
         const fetchResumes = async () => {
-            if (!user) return;
+            if (!user) {
+                setLoading(false);
+                return;
+            }
             try {
                 const docRef = doc(db, 'users', user.uid);
                 const docSnap = await getDoc(docRef);

@@ -58,11 +58,7 @@ const ResumeAnalysis = () => {
                         Optimize your resume for applicant tracking systems with real-time feedback.
                     </p>
                 </div>
-                {!user && (
-                    <div className="bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl text-amber-700 text-xs font-bold">
-                        Guest Mode: Log in to save your analysis permanently.
-                    </div>
-                )}
+
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

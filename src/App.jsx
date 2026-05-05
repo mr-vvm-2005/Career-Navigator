@@ -10,9 +10,7 @@ import Practice from './pages/Practice';
 import MockInterview from './pages/MockInterview';
 import Roadmap from './pages/Roadmap';
 import Resources from './pages/Resources';
-import Login from './auth/Login';
-import Signup from './auth/Signup';
-import ProtectedRoute from './auth/ProtectedRoute';
+
 import { AppProvider, useApp } from './context/AppContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -34,22 +32,15 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      {/* Public Routes */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-
-      {/* Protected Routes */}
-      <Route element={<ProtectedRoute />}>
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/resume" element={<ResumeAnalysis />} />
-          <Route path="/versions" element={<ResumeManager />} />
-          <Route path="/skill-gap" element={<SkillGap />} />
-          <Route path="/roadmap" element={<Roadmap />} />
-          <Route path="/practice" element={<Practice />} />
-          <Route path="/mock-interview" element={<MockInterview />} />
-          <Route path="/resources" element={<Resources />} />
-        </Route>
+      <Route element={<MainLayout />}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/resume" element={<ResumeAnalysis />} />
+        <Route path="/versions" element={<ResumeManager />} />
+        <Route path="/skill-gap" element={<SkillGap />} />
+        <Route path="/roadmap" element={<Roadmap />} />
+        <Route path="/practice" element={<Practice />} />
+        <Route path="/mock-interview" element={<MockInterview />} />
+        <Route path="/resources" element={<Resources />} />
       </Route>
 
       {/* Fallback */}

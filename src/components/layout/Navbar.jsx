@@ -6,7 +6,6 @@ import {
     UserCircleIcon
 } from '@heroicons/react/24/outline';
 import { useApp } from '../../context/AppContext';
-import { logout } from '../../services/authService';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, User as UserIcon, Settings, Bell } from 'lucide-react';
@@ -16,15 +15,6 @@ const Navbar = ({ onOpenProfile }) => {
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
     const navigate = useNavigate();
 
-    const handleLogout = async () => {
-        try {
-            await logout();
-            toast.success("Successfully logged out");
-            navigate("/login");
-        } catch (error) {
-            toast.error("Logout failed");
-        }
-    };
 
     return (
         <header className="fixed top-0 right-0 left-0 lg:left-64 h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 z-40 flex items-center justify-between px-4 sm:px-8">
@@ -100,14 +90,6 @@ const Navbar = ({ onOpenProfile }) => {
                                 <Settings className="w-4 h-4" /> Settings
                             </button>
 
-                            <div className="h-[1px] bg-slate-100 my-1 mx-2"></div>
-                            
-                            <button 
-                                onClick={handleLogout}
-                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50 transition-all border-l-4 border-transparent hover:border-rose-500"
-                            >
-                                <LogOut className="w-4 h-4" /> Sign Out
-                            </button>
                         </div>
                     )}
                 </div>
