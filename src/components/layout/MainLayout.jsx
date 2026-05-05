@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import ProfileModal from './ProfileModal';
+import AIChatbot from '../AIChatbot';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const MainLayout = () => {
@@ -40,6 +41,9 @@ const MainLayout = () => {
                 isOpen={isProfileModalOpen}
                 onClose={() => setIsProfileModalOpen(false)}
             />
+            
+            {/* Global AI Chatbot */}
+            <AIChatbot />
         </div>
     );
 };

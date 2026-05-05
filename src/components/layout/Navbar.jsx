@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     BellIcon,
     MagnifyingGlassIcon,
@@ -6,24 +6,24 @@ import {
     UserCircleIcon
 } from '@heroicons/react/24/outline';
 import { useApp } from '../../context/AppContext';
+import { logout } from '../../services/authService';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import { LogOut, User as UserIcon, Settings, Bell } from 'lucide-react';
 
 const Navbar = ({ onOpenProfile }) => {
-    const { userStats, updateStats } = useApp();
+    const { user, userStats } = useApp();
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+    const navigate = useNavigate();
 
-    // Expose for Quick Switch feature
-    useEffect(() => {
-        window._placementos_updateStats = updateStats;
-    }, [updateStats]);
-
-    const handleQuickSwitch = () => {
-        const isVetrivel = (userStats.name || "").includes("Vetrivel");
-        const nextProfile = isVetrivel
-            ? { name: "Aswin", title: "Full Stack Developer", targetRole: "backend" }
-            : { name: "Vetrivel Murugan P", title: "Tech Aspirant", targetRole: "frontend" };
-
-        updateStats(nextProfile);
-        setShowProfileDropdown(false);
+    const handleLogout = async () => {
+        try {
+            await logout();
+            toast.success("Successfully logged out");
+            navigate("/login");
+        } catch (error) {
+            toast.error("Logout failed");
+        }
     };
 
     return (
@@ -50,7 +50,7 @@ const Navbar = ({ onOpenProfile }) => {
                 </div>
 
                 <button className="relative p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
-                    <BellIcon className="w-5 h-5 sm:w-6 h-6" />
+                    <Bell className="w-5 h-5 sm:w-6 h-6" />
                     <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
                 </button>
 
@@ -67,8 +67,10 @@ const Navbar = ({ onOpenProfile }) => {
                             </div>
                         </div>
                         <div className="hidden sm:flex flex-col items-start translate-y-[-1px]">
-                            <span className="text-sm font-bold text-slate-900 leading-none mb-1 truncate max-w-[80px]">{(userStats.name || 'Student').split(' ')[0]}</span>
-                            <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider leading-none">
+                            <span className="text-sm font-black text-slate-900 leading-none mb-1 truncate max-w-[80px]">
+                                {(user?.displayName || userStats.name || 'User').split(' ')[0]}
+                            </span>
+                            <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest leading-none">
                                 {userStats.levelBadge}
                             </span>
                         </div>
@@ -76,7 +78,12 @@ const Navbar = ({ onOpenProfile }) => {
                     </button>
 
                     {showProfileDropdown && (
-                        <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-slate-100 rounded-2xl shadow-premium py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-slate-100 rounded-2xl shadow-premium py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                            <div className="px-4 py-3 border-b border-slate-50 mb-1">
+                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Account</p>
+                                <p className="text-sm font-bold text-slate-900 truncate">{user?.email}</p>
+                            </div>
+                            
                             <button
                                 onClick={() => {
                                     onOpenProfile();
@@ -84,23 +91,22 @@ const Navbar = ({ onOpenProfile }) => {
                                 }}
                                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all border-l-4 border-transparent hover:border-indigo-500"
                             >
-                                <UserCircleIcon className="w-4 h-4" /> My Profile
+                                <UserIcon className="w-4 h-4" /> My Profile
                             </button>
 
-                            <div className="px-4 py-2 bg-slate-50/50 my-1">
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Quick Switch</p>
-                                <button
-                                    onClick={handleQuickSwitch}
-                                    className="w-full flex items-center justify-between px-3 py-2 bg-white border border-slate-200 rounded-xl text-[11px] font-black text-indigo-600 hover:border-indigo-500 transition-all shadow-sm"
-                                >
-                                    Switch to {userStats.name.includes("Vetrivel") ? "Aswin" : "Vetrivel"}
-                                    <ChevronDownIcon className="w-3 h-3 -rotate-90" />
-                                </button>
-                            </div>
+                            <button
+                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all border-l-4 border-transparent hover:border-indigo-500"
+                            >
+                                <Settings className="w-4 h-4" /> Settings
+                            </button>
 
                             <div className="h-[1px] bg-slate-100 my-1 mx-2"></div>
-                            <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50 transition-all">
-                                <UserCircleIcon className="w-4 h-4" /> Sign Out
+                            
+                            <button 
+                                onClick={handleLogout}
+                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50 transition-all border-l-4 border-transparent hover:border-rose-500"
+                            >
+                                <LogOut className="w-4 h-4" /> Sign Out
                             </button>
                         </div>
                     )}

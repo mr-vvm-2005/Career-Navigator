@@ -17,15 +17,17 @@ import { useApp } from '../../context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Sidebar = ({ onOpenProfile }) => {
-    const { userStats } = useApp();
+    const { user, userStats } = useApp();
     const [isOpen, setIsOpen] = useState(false);
 
     const menuItems = [
         { name: 'Dashboard', path: '/', icon: LayoutDashboard },
         { name: 'ATS Analysis', path: '/resume', icon: FileText },
+        { name: 'Version Manager', path: '/versions', icon: Library },
         { name: 'Skill Gap', path: '/skill-gap', icon: Target },
         { name: 'Roadmap', path: '/roadmap', icon: Map },
         { name: 'Practice', path: '/practice', icon: CheckSquare },
+        { name: 'Mock Interview', path: '/mock-interview', icon: Target },
         { name: 'Resources', path: '/resources', icon: Library },
     ];
 
@@ -33,10 +35,11 @@ const Sidebar = ({ onOpenProfile }) => {
         <>
             <div className="p-8">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
-                        <span className="font-bold text-xl">P</span>
+                    <div className="w-10 h-10 bg-gradient-to-tr from-indigo-500 to-violet-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 border border-white/10 ring-1 ring-black/5 relative overflow-hidden group hover:shadow-indigo-500/50 transition-all duration-300">
+                        <div className="absolute inset-0 bg-white/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <span className="font-black text-2xl tracking-tighter relative z-10 drop-shadow-md">C</span>
                     </div>
-                    <span className="font-bold text-xl text-white tracking-tight">PlacementOS</span>
+                    <span className="font-bold text-xl text-white tracking-tight">CareerNavigator</span>
                 </div>
             </div>
 
@@ -94,7 +97,7 @@ const Sidebar = ({ onOpenProfile }) => {
                 <div className="flex items-center gap-3 px-4 text-slate-500">
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                     <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
-                        {userStats.name ? userStats.name.split(' ')[0] : 'Guest'} Mode
+                        {user?.displayName ? user.displayName.split(' ')[0] : (userStats.name && userStats.name !== 'User' ? userStats.name.split(' ')[0] : 'User')} Mode
                     </span>
                 </div>
             </div>

@@ -27,7 +27,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                     <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
                         <span className="text-white text-lg">P</span>
                     </div>
-                    PlacementOS
+                    CareerNavigator
                 </h1>
             </div>
 

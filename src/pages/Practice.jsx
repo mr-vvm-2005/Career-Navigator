@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
     Trophy,
-    Zap,
-    Flame,
     CheckCircle,
     Lock,
     ChevronRight,
@@ -15,8 +13,7 @@ import {
     Cpu,
     UserCheck,
     RotateCcw,
-    Star,
-    Check
+    Star
 } from 'lucide-react';
 
 const quizData = {
@@ -173,9 +170,9 @@ const Practice = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {categories.map((cat, i) => {
-                    const tasks = practiceData[cat.id] || [];
+                    const tasks = (practiceData && practiceData[cat.id]) || [];
                     const completedCount = tasks.filter(t => t.completed).length;
-                    const progress = Math.round((completedCount / tasks.length) * 100) || 0;
+                    const progress = tasks.length === 0 ? 0 : Math.round((completedCount / tasks.length) * 100);
 
                     return (
                         <motion.div

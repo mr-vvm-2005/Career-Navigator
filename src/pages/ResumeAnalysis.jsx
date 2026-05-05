@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { analyzeResume } from '../utils/atsEngine';
 import {
     SparklesIcon,
     ExclamationCircleIcon,
@@ -9,83 +10,99 @@ import {
     ArrowPathIcon
 } from '@heroicons/react/24/solid';
 import { toast } from 'react-toastify';
+import { Loader2, Save } from 'lucide-react';
 
 const ResumeAnalysis = () => {
-    const { userStats, updateStats } = useApp();
+    const { userStats, updateStats, user } = useApp();
     const [text, setText] = useState(userStats.resumeText || "");
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysis, setAnalysis] = useState(null);
 
-    const performAnalysis = () => {
-        if (!text.trim()) return;
+    const performAnalysis = async () => {
+        if (!text.trim()) {
+            toast.warning("Please enter your resume text first.");
+            return;
+        }
+        
         setIsAnalyzing(true);
-
-        setTimeout(() => {
-            const lowerText = text.toLowerCase();
-            let score = 40; // Base
-            const strengths = [];
-            const gaps = [];
-
-            // Keyword detection
-            if (lowerText.includes('summary') || lowerText.includes('profile')) { score += 10; strengths.push("Professional Summary detected"); }
-            else gaps.push("Add a professional summary");
-
-            if (lowerText.includes('skills')) { score += 10; strengths.push("Dedicated skills section"); }
-            else gaps.push("Missing skills section");
-
-            // Metric detection
-            const metrics = (text.match(/\d+%|\d+\+|\$\d+/g) || []).length;
-            if (metrics > 2) { score += 15; strengths.push("Uses measurable metrics"); }
-            else gaps.push("Add more quantifiable achievements (%, $, +)");
-
-            // Action Verbs
-            const verbs = ['developed', 'implemented', 'designed', 'led', 'managed', 'optimized'];
-            const verbCount = verbs.filter(v => lowerText.includes(v)).length;
-            if (verbCount > 3) { score += 10; strengths.push("Strong use of action verbs"); }
-
-            // Final calculation
-            const finalScore = Math.min(100, score);
-            setAnalysis({ score: finalScore, strengths, gaps });
-            updateStats({ atsScore: finalScore, resumeText: text });
-
+        
+        // Brief delay to simulate intelligent processing and show loading state
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        
+        try {
+            const results = analyzeResume(text);
+            setAnalysis(results);
+            
+            // Persist to Firebase
+            await updateStats({ 
+                atsScore: results.score, 
+                resumeText: text 
+            });
+            
+            toast.success("Analysis complete and saved to cloud!");
+        } catch (error) {
+            console.error("Analysis failed", error);
+            toast.error("Failed to process resume analysis.");
+        } finally {
             setIsAnalyzing(false);
-            toast.success("Analysis Complete!");
-        }, 1500);
+        }
     };
 
     return (
         <div className="space-y-8 max-w-5xl mx-auto">
-            <header>
-                <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em] mb-2 block">Intelligent Engine</span>
-                <h1 className="text-4xl font-black text-slate-900 tracking-tight">ATS Resume Intelligence</h1>
-                <p className="text-slate-500 mt-2 font-medium">
-                    Don't have a professional resume yet? <a href="https://mr-vvm-2005.github.io/Simple-resume-builder-project/" target="_blank" rel="noreferrer" className="text-indigo-600 font-bold hover:underline">Complete Step 1</a> first.
-                </p>
+            <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                <div>
+                    <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em] mb-2 block">Intelligent Engine</span>
+                    <h1 className="text-4xl font-black text-slate-900 tracking-tight">ATS Resume Intelligence</h1>
+                    <p className="text-slate-500 mt-2 font-medium">
+                        Optimize your resume for applicant tracking systems with real-time feedback.
+                    </p>
+                </div>
+                {!user && (
+                    <div className="bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl text-amber-700 text-xs font-bold">
+                        Guest Mode: Log in to save your analysis permanently.
+                    </div>
+                )}
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 {/* Editor */}
                 <div className="lg:col-span-7 space-y-4">
-                    <div className="bg-white rounded-[2rem] shadow-soft border border-slate-100 overflow-hidden flex flex-col h-[500px]">
+                    <div className="bg-white rounded-[2rem] shadow-soft border border-slate-100 overflow-hidden flex flex-col h-[550px]">
                         <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
                             <span className="text-xs font-bold text-slate-500">RESUME PLAIN TEXT</span>
-                            <span className="text-[10px] font-bold text-indigo-500">{text.split(/\s+/).filter(Boolean).length} words</span>
+                            <div className="flex items-center gap-4">
+                                <span className="text-[10px] font-bold text-indigo-500">{text.split(/\s+/).filter(Boolean).length} words</span>
+                                {userStats.resumeText === text && text.length > 0 && (
+                                    <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-500">
+                                        <Save size={10} /> Synced
+                                    </span>
+                                )}
+                            </div>
                         </div>
                         <textarea
                             value={text}
                             onChange={(e) => setText(e.target.value)}
-                            className="flex-1 p-6 text-sm font-medium text-slate-700 focus:outline-none resize-none leading-relaxed"
-                            placeholder="Paste your resume content here..."
+                            className="flex-1 p-6 text-sm font-medium text-slate-700 focus:outline-none resize-none leading-relaxed transition-colors duration-300"
+                            placeholder="Paste your resume content here (Ctrl+V)..."
+                            disabled={isAnalyzing}
                         />
                         <div className="p-4 bg-slate-50/50 border-t border-slate-100">
                             <button
                                 onClick={performAnalysis}
-                                disabled={isAnalyzing || !text}
-                                className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all ${isAnalyzing ? 'bg-slate-200 text-slate-400' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-xl'
-                                    }`}
+                                disabled={isAnalyzing || !text.trim()}
+                                className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all ${
+                                    isAnalyzing || !text.trim() 
+                                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
+                                    : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg hover:shadow-indigo-200 active:scale-[0.98]'
+                                }`}
                             >
-                                {isAnalyzing ? <ArrowPathIcon className="w-5 h-5 animate-spin" /> : <SparklesIcon className="w-5 h-5 text-indigo-400" />}
-                                {isAnalyzing ? 'Processing Patterns...' : 'Analyze My Resume'}
+                                {isAnalyzing ? (
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                ) : (
+                                    <SparklesIcon className="w-5 h-5 text-indigo-200" />
+                                )}
+                                {isAnalyzing ? 'Decoding Semantics...' : 'Save & Analyze Resume'}
                             </button>
                         </div>
                     </div>
@@ -96,68 +113,77 @@ const ResumeAnalysis = () => {
                     <AnimatePresence mode="wait">
                         {!analysis ? (
                             <motion.div
-                                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                                className="bg-indigo-600/5 border-2 border-dashed border-indigo-200 rounded-[2rem] p-8 text-center flex flex-col items-center justify-center h-[500px]"
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="bg-indigo-600/5 border-2 border-dashed border-indigo-200 rounded-[2rem] p-8 text-center flex flex-col items-center justify-center h-[550px]"
                             >
-                                <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-4">
-                                    <LightBulbIcon className="w-8 h-8 text-indigo-500" />
+                                <div className="w-20 h-20 bg-white rounded-3xl shadow-sm flex items-center justify-center mb-6">
+                                    <LightBulbIcon className="w-10 h-10 text-indigo-500" />
                                 </div>
-                                <h3 className="font-bold text-slate-900 mb-2">Ready to audit?</h3>
-                                <p className="text-sm text-slate-500 max-w-[200px]">Paste your content to start the professional ATS analysis.</p>
+                                <h3 className="font-bold text-slate-900 text-xl mb-3">Ready to audit?</h3>
+                                <p className="text-sm text-slate-500 max-w-[240px] leading-relaxed">
+                                    Paste your resume content to start the professional ATS analysis. We'll score your structure, metrics, and language patterns.
+                                </p>
                             </motion.div>
                         ) : (
                             <motion.div
-                                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-                                className="space-y-6"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="space-y-6 overflow-y-auto max-h-[550px] pr-2 custom-scrollbar"
                             >
                                 {/* Score Card */}
                                 <div className="bg-white p-8 rounded-[2rem] shadow-premium border border-indigo-100 text-center relative overflow-hidden">
                                     <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-violet-500"></div>
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Overall Quality Score</p>
-                                    <div className="text-7xl font-black text-slate-900 tracking-tighter mb-4">{analysis.score}</div>
-                                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">ATS Readiness Score</p>
+                                    <div className="text-8xl font-black text-slate-900 tracking-tighter mb-4">{analysis.score}</div>
+                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest">
                                         <SparklesIcon className="w-3 h-3" />
-                                        {analysis.score > 70 ? 'Optimal Performance' : 'Growth Potential'}
+                                        {analysis.score >= 70 ? 'Industry Standard' : 'Needs Optimization'}
                                     </div>
                                 </div>
 
                                 {/* Analysis Breakdown */}
                                 <div className="space-y-4">
-                                    <div className="bg-emerald-50/50 border border-emerald-100 p-4 rounded-2xl">
-                                        <h4 className="text-xs font-bold text-emerald-700 flex items-center gap-2 mb-3">
-                                            <CheckCircleIcon className="w-4 h-4" /> STRENGTHS
-                                        </h4>
-                                        <div className="space-y-2">
-                                            {analysis.strengths.map(s => (
-                                                <div key={s} className="text-xs font-bold text-emerald-900 flex items-center gap-2">
-                                                    <div className="w-1 h-1 rounded-full bg-emerald-500" /> {s}
-                                                </div>
-                                            ))}
+                                    {analysis.strengths.length > 0 && (
+                                        <div className="bg-emerald-50/50 border border-emerald-100 p-5 rounded-2xl">
+                                            <h4 className="text-xs font-black text-emerald-700 flex items-center gap-2 mb-4 uppercase tracking-wider">
+                                                <CheckCircleIcon className="w-5 h-5" /> STRENGTHS
+                                            </h4>
+                                            <div className="space-y-3">
+                                                {analysis.strengths.map((s, idx) => (
+                                                    <div key={idx} className="text-xs font-bold text-emerald-900 flex items-start gap-2">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1 flex-shrink-0" />
+                                                        <span>{s}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
 
-                                    <div className="bg-amber-50/50 border border-amber-100 p-4 rounded-2xl">
-                                        <h4 className="text-xs font-bold text-amber-700 flex items-center gap-2 mb-3">
-                                            <ExclamationCircleIcon className="w-4 h-4" /> IMPROVEMENTS
-                                        </h4>
-                                        <div className="space-y-2">
-                                            {analysis.gaps.map(g => (
-                                                <div key={g} className="text-xs font-bold text-amber-900 flex items-center gap-2">
-                                                    <div className="w-1 h-1 rounded-full bg-amber-500" /> {g}
-                                                </div>
-                                            ))}
+                                    {(analysis.weaknesses.length > 0 || analysis.suggestions.length > 0) && (
+                                        <div className="bg-amber-50/50 border border-amber-100 p-5 rounded-2xl">
+                                            <h4 className="text-xs font-black text-amber-700 flex items-center gap-2 mb-4 uppercase tracking-wider">
+                                                <ExclamationCircleIcon className="w-5 h-5" /> IMPROVEMENTS
+                                            </h4>
+                                            <div className="space-y-3">
+                                                {[...analysis.weaknesses, ...analysis.suggestions].slice(0, 5).map((item, idx) => (
+                                                    <div key={idx} className="text-xs font-bold text-amber-900 flex items-start gap-2">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1 flex-shrink-0" />
+                                                        <span>{item}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
 
-                                <a
-                                    href="https://mr-vvm-2005.github.io/Simple-resume-builder-project/"
-                                    target="_blank" rel="noopener noreferrer"
-                                    className="w-full py-4 bg-white border border-slate-200 rounded-2xl font-bold flex items-center justify-center gap-2 text-slate-700 hover:bg-slate-50 transition-all"
+                                <button
+                                    className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all shadow-xl"
+                                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                                 >
-                                    Edit in Resume Builder
-                                    <ArrowPathIcon className="w-4 h-4" />
-                                </a>
+                                    Refine Resume Content
+                                    <ArrowPathIcon className="w-5 h-5 text-slate-400" />
+                                </button>
                             </motion.div>
                         )}
                     </AnimatePresence>

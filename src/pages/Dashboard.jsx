@@ -6,13 +6,10 @@ import {
     Target,
     Map as MapIcon,
     TrendingUp,
-    Clock,
-    Briefcase,
-    ChevronRight,
     CheckCircle2,
-    AlertCircle,
     FileText,
-    Code
+    Code,
+    Flame
 } from 'lucide-react';
 import {
     Chart as ChartJS,
@@ -28,7 +25,7 @@ import { Radar } from 'react-chartjs-2';
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
 const Dashboard = () => {
-    const { userStats } = useApp();
+    const { userStats, updateStats } = useApp();
 
     const radarData = {
         labels: ['DSA', 'Frontend', 'Backend', 'System Design', 'Core CS', 'Soft Skills'],
@@ -54,7 +51,7 @@ const Dashboard = () => {
         { label: 'ATS Score', value: `${userStats.atsScore}%`, icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-50' },
         { label: 'Skill Match', value: `${userStats.skillMatch}%`, icon: Target, color: 'text-indigo-500', bg: 'bg-indigo-50' },
         { label: 'Readiness', value: `${userStats.readinessScore}/100`, icon: TrendingUp, color: 'text-violet-500', bg: 'bg-violet-50' },
-        { label: 'Global Rank', value: '#1,284', icon: Trophy, color: 'text-amber-500', bg: 'bg-amber-50' },
+        { label: 'Daily Streak', value: `${userStats.streak || 0} Days`, icon: Flame, color: 'text-orange-500', bg: 'bg-orange-50' },
     ];
 
     return (
@@ -69,9 +66,26 @@ const Dashboard = () => {
                         Start by <a href="https://mr-vvm-2005.github.io/Simple-resume-builder-project/" target="_blank" rel="noreferrer" className="text-indigo-600 font-black hover:underline underline-offset-4 decoration-2">Creating your Resume</a> to update your metrics.
                     </p>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 bg-white px-4 py-2.5 rounded-xl shadow-soft border border-slate-100 self-start md:self-end">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                    REAL-TIME SYNC ACTIVE
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                    <select 
+                        value={userStats.targetRole || "Software Developer"}
+                        onChange={(e) => {
+                            const newRole = e.target.value;
+                            updateStats({ targetRole: newRole });
+                        }}
+                        className="bg-slate-50 border border-slate-200 text-slate-900 text-sm font-bold rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer shadow-sm"
+                    >
+                        <option value="Software Developer">Software Developer</option>
+                        <option value="Frontend Engineer">Frontend Engineer</option>
+                        <option value="Backend Engineer">Backend Engineer</option>
+                        <option value="Data Analyst">Data Analyst</option>
+                        <option value="Product Manager">Product Manager</option>
+                    </select>
+
+                    <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 bg-white px-4 py-2.5 rounded-xl shadow-soft border border-slate-100">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                        REAL-TIME SYNC ACTIVE
+                    </div>
                 </div>
             </div>
 

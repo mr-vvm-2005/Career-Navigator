@@ -20,7 +20,7 @@ const Footer = () => {
                 </div>
 
                 <p className="text-xs text-slate-400 font-medium">
-                    © {new Date().getFullYear()} PlacementOS. All rights reserved.
+                    © {new Date().getFullYear()} CareerNavigator. All rights reserved.
                 </p>
             </div>
         </footer>
